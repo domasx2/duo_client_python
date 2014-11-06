@@ -4,7 +4,7 @@ Duo Security Auth API v1 reference client implementation.
 <http://www.duosecurity.com/docs/authapi-v1>
 """
 
-import client
+import .client
 
 
 FACTOR_AUTO = 'auto'
