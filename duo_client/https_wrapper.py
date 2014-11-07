@@ -19,14 +19,15 @@
 """Extensions to allow HTTPS requests with SSL certificate validation."""
 
 
-import httplib
+from http import client as httpclient
 import re
 import socket
-import urllib2
+from urllib.request import HTTPSHandler
+from urllib.error import URLError
 import ssl
 
 
-class InvalidCertificateException(httplib.HTTPException):
+class InvalidCertificateException(httpclient.HTTPException):
   """Raised when a certificate is provided with an invalid hostname."""
 
   def __init__(self, host, cert, reason):
@@ -36,7 +37,7 @@ class InvalidCertificateException(httplib.HTTPException):
       host: The hostname the connection was made to.
       cert: The SSL certificate (as a dictionary) the host returned.
     """
-    httplib.HTTPException.__init__(self)
+    httpclient.HTTPException.__init__(self)
     self.host = host
     self.cert = cert
     self.reason = reason
@@ -48,10 +49,10 @@ class InvalidCertificateException(httplib.HTTPException):
             (self.host, self.reason, self.cert))
 
 
-class CertValidatingHTTPSConnection(httplib.HTTPConnection):
+class CertValidatingHTTPSConnection(httpclient.HTTPConnection):
   """An HTTPConnection that connects over SSL and validates certificates."""
 
-  default_port = httplib.HTTPS_PORT
+  default_port = httpclient.HTTPS_PORT
 
   def __init__(self, host, port=None, key_file=None, cert_file=None,
                ca_certs=None, strict=None, **kwargs):
@@ -67,7 +68,7 @@ class CertValidatingHTTPSConnection(httplib.HTTPConnection):
       strict: When true, causes BadStatusLine to be raised if the status line
           can't be parsed as a valid HTTP/1.0 or 1.1 status line.
     """
-    httplib.HTTPConnection.__init__(self, host, port, strict, **kwargs)
+    httpclient.HTTPConnection.__init__(self, host, port, strict, **kwargs)
     self.key_file = key_file
     self.cert_file = cert_file
     self.ca_certs = ca_certs
@@ -123,12 +124,12 @@ class CertValidatingHTTPSConnection(httplib.HTTPConnection):
         raise InvalidCertificateException(hostname, cert, 'hostname mismatch')
 
 
-class CertValidatingHTTPSHandler(urllib2.HTTPSHandler):
+class CertValidatingHTTPSHandler(HTTPSHandler):
   """An HTTPHandler that validates SSL certificates."""
 
   def __init__(self, **kwargs):
-    """Constructor. Any keyword args are passed to the httplib handler."""
-    urllib2.HTTPSHandler.__init__(self)
+    """Constructor. Any keyword args are passed to the httpclient handler."""
+    HTTPSHandler.__init__(self)
     self._connection_args = kwargs
 
   def https_open(self, req):
@@ -138,10 +139,10 @@ class CertValidatingHTTPSHandler(urllib2.HTTPSHandler):
       return CertValidatingHTTPSConnection(host, **full_kwargs)
     try:
       return self.do_open(http_class_wrapper, req)
-    except urllib2.URLError, e:
+    except URLError as e:
       if type(e.reason) == ssl.SSLError and e.reason.args[0] == 1:
         raise InvalidCertificateException(req.host, '',
                                           e.reason.args[1])
       raise
 
-  https_request = urllib2.HTTPSHandler.do_request_
+  https_request = HTTPSHandler.do_request_

@@ -10,7 +10,7 @@ import datetime
 import email.utils
 import hashlib
 import hmac
-import httplib
+from http import client as httpclient
 import json
 import os
 import socket
@@ -30,7 +30,7 @@ try:
 except ImportError as e:
     pytz_error = e
 
-from https_wrapper import CertValidatingHTTPSConnection
+from .https_wrapper import CertValidatingHTTPSConnection
 
 DEFAULT_CA_CERTS = os.path.join(os.path.dirname(__file__), 'ca_certs.pem')
 
@@ -200,9 +200,9 @@ class Client(object):
 
         # Create outer HTTP(S) connection.
         if self.ca_certs == 'HTTP':
-            conn = httplib.HTTPConnection(host, port)
+            conn = httpclient.HTTPConnection(host, port)
         elif self.ca_certs == 'DISABLE':
-            conn = httplib.HTTPSConnection(host, port)
+            conn = httpclient.HTTPSConnection(host, port)
         else:
             conn = CertValidatingHTTPSConnection(host,
                                                  port,
@@ -297,17 +297,17 @@ def output_response(response, data, headers=[]):
     """
     Print response, parsed, sorted, and pretty-printed if JSON
     """
-    print response.status, response.reason
+    print(response.status, response.reason)
     for header in headers:
         val = response.getheader(header)
         if val is not None:
-            print '%s: %s' % (header, val)
+            print('%s: %s' % (header, val))
     try:
         data = json.loads(data)
         data = json.dumps(data, sort_keys=True, indent=4)
     except ValueError:
         pass
-    print data
+    print(data)
 
 
 def main():
