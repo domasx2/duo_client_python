@@ -123,7 +123,7 @@ the following fields:
 
 import urllib
 
-import .client
+from . import client
 
 USER_STATUS_ACTIVE = 'active'
 USER_STATUS_BYPASS = 'bypass'

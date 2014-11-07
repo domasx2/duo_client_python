@@ -3,7 +3,7 @@ Duo Security Verify API reference client implementation.
 
 <http://www.duosecurity.com/docs/duoverify>
 """
-import .client
+from . import client
 
 class Verify(client.Client):
     sig_version = 1
