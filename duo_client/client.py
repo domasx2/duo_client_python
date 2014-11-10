@@ -16,6 +16,7 @@ import os
 import socket
 import sys
 import urllib
+from urllib.parse import quote, urlencode
 
 try:
     # For the optional demonstration CLI program.
@@ -43,8 +44,8 @@ def canon_params(params):
     # http://tools.ietf.org/html/rfc5849#section-3.4.1.3.2
     args = []
     for (key, vals) in sorted(
-        (urllib.quote(key, '~'), vals) for (key, vals) in params.items()):
-        for val in sorted(urllib.quote(val, '~') for val in vals):
+        (quote(key, '~'), vals) for (key, vals) in params.items()):
+        for val in sorted(quote(val, '~') for val in vals):
             args.append('%s=%s' % (key, val))
     return '&'.join(args)
 
@@ -171,11 +172,11 @@ class Client(object):
 
         if method in ['POST', 'PUT']:
             headers['Content-type'] = 'application/x-www-form-urlencoded'
-            body = urllib.urlencode(params, doseq=True)
+            body = urlencode(params, doseq=True)
             uri = path
         else:
             body = None
-            uri = path + '?' + urllib.urlencode(params, doseq=True)
+            uri = path + '?' + urlencode(params, doseq=True)
 
         return self._make_request(method, uri, body, headers)
 
