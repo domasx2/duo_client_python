@@ -90,7 +90,7 @@ def normalize_params(params):
             return value.encode("utf-8")
         return value
     def to_list(value):
-        if value is None or isinstance(value, basestring):
+        if value is None or isinstance(value, str):
             return [value]
         return value
     return dict(
