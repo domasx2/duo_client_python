@@ -72,7 +72,7 @@ def sign(ikey, skey, method, host, uri, date, sig_version, params):
     Return basic authorization header line with a Duo Web API signature.
     """
     canonical = canonicalize(method, host, uri, params, date, sig_version)
-    if isinstance(skey, unicode):
+    if isinstance(skey, str):
         skey = skey.encode('utf-8')
     sig = hmac.new(skey, canonical, hashlib.sha1)
     auth = '%s:%s' % (ikey, sig.hexdigest())
@@ -86,7 +86,7 @@ def normalize_params(params):
     # urllib cannot handle unicode strings properly. quote() excepts,
     # and urlencode() replaces them with '?'.
     def encode(value):
-        if isinstance(value, unicode):
+        if isinstance(value, str):
             return value.encode("utf-8")
         return value
     def to_list(value):
