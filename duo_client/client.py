@@ -75,7 +75,7 @@ def sign(ikey, skey, method, host, uri, date, sig_version, params):
     canonical = canonicalize(method, host, uri, params, date, sig_version)
     if isinstance(skey, str):
         skey = skey.encode('utf-8')
-    sig = hmac.new(skey, canonical, hashlib.sha1)
+    sig = hmac.new(skey, canonical.encode('utf-8'), hashlib.sha1)
     auth = '%s:%s' % (ikey, sig.hexdigest())
     return 'Basic %s' % base64.b64encode(auth)
 
