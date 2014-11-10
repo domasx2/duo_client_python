@@ -77,7 +77,7 @@ def sign(ikey, skey, method, host, uri, date, sig_version, params):
         skey = skey.encode('utf-8')
     sig = hmac.new(skey, canonical.encode('utf-8'), hashlib.sha1)
     auth = '%s:%s' % (ikey, sig.hexdigest())
-    return 'Basic %s' % base64.b64encode(auth.encode('utf-8'))
+    return 'Basic %s' % base64.b64encode(auth.encode('utf-8')).decode()
 
 def normalize_params(params):
     """
@@ -161,6 +161,7 @@ class Client(object):
                     now,
                     self.sig_version,
                     params)
+
         headers = {
             'Authorization': auth,
             'Date': now,
@@ -266,7 +267,7 @@ class Client(object):
             raise error
         if response.status != 200:
             try:
-                data = json.loads(data)
+                data = json.loads(data.decode())
                 if data['stat'] == 'FAIL':
                     if 'message_detail' in data:
                         raise_error('Received %s %s (%s)' % (
@@ -286,7 +287,7 @@ class Client(object):
                     response.reason,
             ))
         try:
-            data = json.loads(data)
+            data = json.loads(data.decode())
             if data['stat'] != 'OK':
                 raise_error('Received error response: %s' % data)
             return data['response']
@@ -298,7 +299,6 @@ def output_response(response, data, headers=[]):
     """
     Print response, parsed, sorted, and pretty-printed if JSON
     """
-    print(response.status, response.reason)
     for header in headers:
         val = response.getheader(header)
         if val is not None:
@@ -308,7 +308,6 @@ def output_response(response, data, headers=[]):
         data = json.dumps(data, sort_keys=True, indent=4)
     except ValueError:
         pass
-    print(data)
 
 
 def main():
